@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:broker="http://activemq.apache.org/schema/core"
+	   xsi:schemaLocation="
+	   http://activemq.apache.org/schema/core 	   http://activemq.apache.org/schema/core/activemq-core.xsd
+	   http://www.springframework.org/schema/beans	   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- do not use the shutdown hook as it would cause the broker to shutdown when you press ctrl + c,
+	     instead we will let Spring shutdown the broker 
+-->	
+	<broker id="broker" useShutdownHook="false" useJmx="true" persistent="false" xmlns="http://activemq.apache.org/schema/core">
+		<transportConnectors>
+			<transportConnector name="vm" uri="vm://localhost"/>
+		</transportConnectors>
+	</broker>
+	
+	<!-- Connection factory -->
+	<bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="vm://localhost" />
+		<!-- property name="brokerURL" value="tcp://192.168.0.18:61616" /-->
+	</bean>
+	
+	<!-- Caching Connection factory -->
+	<bean id="connectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+		<constructor-arg ref="amqConnectionFactory" />
+	</bean>	
+
+	<!-- Queue to publish to -->
+	<bean id="destination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="oliss.import" />
+	</bean>
+	
+	<!-- JmsTemplate config -->
+	<bean id="producerTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="defaultDestination" ref="destination" />
+	</bean>
+</beans>
