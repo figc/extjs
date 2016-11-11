@@ -2,8 +2,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans       
        					   http://www.springframework.org/schema/beans/spring-beans.xsd
+       					   http://www.springframework.org/schema/task       
+       					   http://www.springframework.org/schema/task/spring-task.xsd
        					   http://camel.apache.org/schema/spring        
        					   http://camel.apache.org/schema/spring/camel-spring.xsd">
 
@@ -11,6 +14,12 @@
 	  <contextScan />
 	  <template id="producerTemplate" defaultEndpoint="seda:aceLogging"/>
   </camelContext>
+  
+  <bean id="aceWorker" class="test.route.LogEventWorker" init-method="start">
+  	<property name="executor" ref="executor" />
+  </bean>
+  
+  <task:executor id="executor" pool-size="2" />
 
 	<!-- we use the vm protocol to communicate intra-jvm which is much faster than tcp 
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
