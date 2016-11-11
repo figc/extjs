@@ -13,9 +13,14 @@ public class ExtJSRoute extends SpringRouteBuilder {
 		
 		from("seda:aceLogging")
 		.setExchangePattern(ExchangePattern.InOnly)
+		
 		.to("bean:hello")
+		
 		.to("bean:goodbye")
-		.to("bean:goodbye2");
+		
+		.to("bean:goodbye2")
+		
+		.end();
 	}
 
 }
