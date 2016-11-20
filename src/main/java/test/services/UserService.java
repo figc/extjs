@@ -15,6 +15,7 @@ import org.apache.camel.ProducerTemplate;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,8 +88,7 @@ public class UserService {
      * Update a user in the system
      */
     @RequestMapping(value = "/user/update", method = RequestMethod.POST)
-    public Map<String, Object> updateUser(@RequestBody User parsedUser)         
-    {
+    public Map<String, Object> updateUser(@RequestBody User parsedUser) {
         User localUser = users.get(parsedUser.getId());
         if ( localUser == null ) {
             throw new RuntimeException("Invalid User");
@@ -100,6 +100,19 @@ public class UserService {
 
         Map<String, Object> results = new HashMap<String, Object>();
         results.put("success", true);
+        return results;
+    }
+    
+    @RequestMapping(value = "/user/sendData", method = RequestMethod.POST/*, consumes = {MediaType.APPLICATION_XML_VALUE}*/)
+    public Map<String, Object> sendData(@RequestParam("data") String data) {
+    	
+    	System.out.println("##########################################################\n\n");
+    	System.out.println(data);
+    	System.out.println("\n\n##########################################################");
+    	
+        Map<String, Object> results = new HashMap<String, Object>();
+        results.put("success", true);
+
         return results;
     }
     
@@ -139,8 +152,7 @@ public class UserService {
     /**
      * Parse an json packet of user(s)
      */
-    private Collection<User> parseUserJson( String json ) throws Exception
-    {
+    private Collection<User> parseUserJson( String json ) throws Exception {
         try
         {
             if ( json.startsWith("[") && json.endsWith("]") )
