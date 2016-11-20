@@ -33,18 +33,6 @@ public class Hello {
 					user.getId(), user.getName(), json);
 		
 			notifier.publishEvent(user);
-//			List<User> list = jdbcTemplate.query("select * from AUDITING", new RowMapper<User>() {
-//	    		@Override
-//	    		public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-//	    			User user = null;
-//	    			try {
-//	    				user = mapper.readValue(rs.getString("DATA"), User.class);
-//	    			} catch (IOException e) {
-//	    				e.printStackTrace();
-//	    			}
-//	    			return user;
-//	    		}
-//			});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

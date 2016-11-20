@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import test.model.User;
+import test.route.AceEventNotifier;
 
 /**
  * A sample user service to power the EXTJS application
@@ -50,6 +51,8 @@ public class UserService {
     @Autowired
     private ProducerTemplate producerTemplate;
 
+    @Autowired
+    private AceEventNotifier notifier;
 
 	/**
      * Authenticate a user
@@ -124,8 +127,9 @@ public class UserService {
     	user.setName("Mario");
     	user.setResults(list);
     	
-    	producerTemplate.sendBody("seda:aceLogging", ExchangePattern.InOnly, user);
-    	
+//    	producerTemplate.sendBody("seda:aceLogging", ExchangePattern.InOnly, user);
+    	notifier.publishEvent(user);
+
         Map<String, Object> results = new HashMap<String, Object>();
         results.put("success", true);
 

@@ -1,13 +1,31 @@
-import java.util.UUID;
-import java.util.concurrent.Executors;
+import java.io.IOException;
 
-import test.model.User;
-import test.route.AceEventNotifier;
-import test.route.LogEventWorker;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 public class Main { 
 
+	public static void main(String[] args) throws ClientProtocolException, IOException {
+		
+		CloseableHttpClient httpclient = HttpClients.custom().build();
+		HttpPost post = new HttpPost("http://127.0.0.1/extjs/services/1/user/sendMessage.json");
+		
+        CloseableHttpResponse response = null;
+        while (true) {
+        	response = httpclient.execute(post);
+	        HttpEntity entity = response.getEntity();
+	        EntityUtils.consume(entity);
+        }
+	}
+	
+	/*
 	public static void main(String[] args) {
+	
 		
 		LogEventWorker worker = new LogEventWorker();
 		worker.setExecutor(Executors.newSingleThreadExecutor());
@@ -21,8 +39,6 @@ public class Main {
 		t.start();
 		t2.start();
 	}
-	
-	
 	static class MyThread extends Thread {
 		
 		private AceEventNotifier eventNotifier;
@@ -42,5 +58,5 @@ public class Main {
 				eventNotifier.publishEvent(u);
 			}
 		}		
-	}
+	}*/
 }
