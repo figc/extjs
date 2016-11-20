@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+
 import test.model.User;
 import test.util.UserXmlWriter;
 
@@ -15,6 +17,8 @@ public class BufferingAceTransporter implements AceTransporter {
 	
 	private UserXmlWriter xmlWriter;
 	
+	private CloseableHttpClient httpclient = null;
+	
 	public BufferingAceTransporter(int maxSize, UserXmlWriter xmlWriter) {
 		this.maxSize = maxSize;
 		this.xmlWriter = xmlWriter;
@@ -23,19 +27,17 @@ public class BufferingAceTransporter implements AceTransporter {
 	@Override
 	public void transportEvent(User user) {
 		try {
+			
+			// todo synch on list
 			userList.add(user);
 			
 			int size = userList.size();
 			if (size > maxSize) {
 				
-				StringBuilder buf = new StringBuilder();
-				String s;
-				for (User u : userList) {
-					s = xmlWriter.marshalUser(u);
-					buf.append(s);
-				}
-				
-				post(buf.toString());
+				List<User> temp = Collections.unmodifiableList(new ArrayList<User>(userList));
+
+				String xml = xmlWriter.marshalUsers(temp);
+				post(xml);
 				
 				userList.clear();
 			}

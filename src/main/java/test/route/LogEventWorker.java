@@ -7,8 +7,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import test.model.User;
 
 public class LogEventWorker extends Thread {
-
-	private static final long MAX_BYTES = 1024 * 10 * 10 * 10;
 	
 	private BlockingQueue<User> queue = new LinkedBlockingQueue<User>();
 	
