@@ -36,11 +36,6 @@ public class BufferingAceTransporter implements AceTransporter {
 		this.auditDAO = auditDAO;
 	}
 
-	public BufferingAceTransporter(int maxSize, UserXmlWriter xmlWriter) {
-		this.maxSize = maxSize;
-		this.xmlWriter = xmlWriter;
-	}
-
 	@Override
 	public void transportEvent(User user) {
 		synchronized (userList) {
