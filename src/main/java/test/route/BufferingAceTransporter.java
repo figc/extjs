@@ -47,19 +47,16 @@ public class BufferingAceTransporter implements AceTransporter {
 				if (size > maxSize) {
 					
 					List<User> temp = Collections.unmodifiableList(new ArrayList<User>(userList));
-	
 					String xml = xmlWriter.marshalUsers(temp);
+
 					int responseCode = post(xml);
-					
-					System.out.println(responseCode);
 					if (responseCode != HttpStatus.SC_OK) {
-						System.out.println("oooops....not 200");
 						int records = auditDAO.logAceEvent(temp);
-						System.out.println("Records persisted == size of "+ size + " // " + (records == size));
+						System.out.println("############Records persisted == size of "+ size + " // " + (records == size));
 						
 						auditDAO.listAceEvents();
 					}
-					userList.clear();	
+					userList.clear();
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
