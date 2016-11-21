@@ -6,12 +6,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.camel.ExchangePattern;
-import org.apache.camel.ProducerTemplate;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +46,11 @@ public class UserService {
         users.put(u2.getId(), u2);
     }
     
-//    private JmsTemplate jmsTemplate;
-    
-    @Autowired
-    private ProducerTemplate producerTemplate;
+//    @Autowired
+//    private ProducerTemplate producerTemplate;
 
+    private AtomicInteger atomInt = new AtomicInteger(0);
+    
     @Autowired
     private AceEventNotifier notifier;
 
@@ -103,12 +102,17 @@ public class UserService {
         return results;
     }
     
-    @RequestMapping(value = "/user/sendData", method = RequestMethod.POST/*, consumes = {MediaType.APPLICATION_XML_VALUE}*/)
-    public Map<String, Object> sendData(@RequestParam("data") String data) {
-    	
-    	System.out.println("##########################################################\n\n");
+    @RequestMapping(value = "/user/sendData", method = RequestMethod.POST, 
+    		consumes = {MediaType.APPLICATION_XML_VALUE})
+    public Map<String, Object> sendData(@RequestBody String data) {	
     	System.out.println(data);
-    	System.out.println("\n\n##########################################################");
+    	
+    	atomInt.incrementAndGet();
+    	
+    	int i = atomInt.get();
+    	if (i % 2 == 1) {
+    		throw new RuntimeException("ERROR...testing out saving to db");
+    	}
     	
         Map<String, Object> results = new HashMap<String, Object>();
         results.put("success", true);

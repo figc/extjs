@@ -7,16 +7,15 @@ import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import test.model.User;
+import test.servlet.AuditDAO;
 import test.util.UserXmlWriter;
 
 public class BufferingAceTransporter implements AceTransporter {
@@ -29,6 +28,14 @@ public class BufferingAceTransporter implements AceTransporter {
 	
 	private CloseableHttpClient httpclient = null;
 	
+	private AuditDAO auditDAO;
+	
+	public BufferingAceTransporter(int maxSize, UserXmlWriter xmlWriter, AuditDAO auditDAO) {
+		this.maxSize = maxSize;
+		this.xmlWriter = xmlWriter;
+		this.auditDAO = auditDAO;
+	}
+
 	public BufferingAceTransporter(int maxSize, UserXmlWriter xmlWriter) {
 		this.maxSize = maxSize;
 		this.xmlWriter = xmlWriter;
@@ -36,8 +43,9 @@ public class BufferingAceTransporter implements AceTransporter {
 
 	@Override
 	public void transportEvent(User user) {
-		try {
-			synchronized (userList) {
+		synchronized (userList) {
+			try {
+
 				userList.add(user);
 				
 				int size = userList.size();
@@ -51,13 +59,16 @@ public class BufferingAceTransporter implements AceTransporter {
 					System.out.println(responseCode);
 					if (responseCode != HttpStatus.SC_OK) {
 						System.out.println("oooops....not 200");
-					} else {
-						userList.clear();	
+						int records = auditDAO.logAceEvent(temp);
+						System.out.println("Records persisted == size of "+ size + " // " + (records == size));
+						
+						auditDAO.listAceEvents();
 					}
+					userList.clear();	
 				}
-			}// sync
-		} catch (Exception ex) {
-			ex.printStackTrace();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 	
@@ -65,12 +76,11 @@ public class BufferingAceTransporter implements AceTransporter {
 		if (httpclient == null) {
 			httpclient = HttpClients.custom().build();
 		}
-		
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
-	    params.add(new BasicNameValuePair("data", xml));
-	    
+
 	    HttpPost post = new HttpPost("http://127.0.0.1/extjs/services/1/user/sendData.json");
-	    post.setEntity(new UrlEncodedFormEntity(params));
+	    
+	    post.setHeader("Content-Type", "application/xml");
+	    post.setEntity(new ByteArrayEntity(xml.getBytes("UTF-8")));
 	    
         CloseableHttpResponse response = httpclient.execute(post);
 	    HttpEntity entity = response.getEntity();

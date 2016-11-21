@@ -10,10 +10,10 @@
        					   http://camel.apache.org/schema/spring        
        					   http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-  <camelContext xmlns="http://camel.apache.org/schema/spring">
+  <!-- camelContext xmlns="http://camel.apache.org/schema/spring">
 	  <contextScan />
 	  <template id="producerTemplate" defaultEndpoint="seda:aceLogging"/>
-  </camelContext>
+  </camelContext-->
   
   <bean id="aceWorker" class="test.route.LogEventWorker" init-method="start">
   	<property name="executor" ref="executor" />
@@ -23,6 +23,7 @@
 	    <constructor-arg>
   	  	 	<bean class="test.util.UserXmlWriter" />
 	    </constructor-arg>
+	    <constructor-arg ref="auditDAO" />
 	  </bean>
   	</property>
   </bean>
