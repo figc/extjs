@@ -1,5 +1,6 @@
 package test.route.worker;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -17,22 +18,36 @@ public class PersistentWorker extends Worker {
 
 	private AuditDAO auditDAO;
 	
-	/**
-	 * 
-	 * @param auditDAO
-	 */
+	/** */
 	public PersistentWorker(AuditDAO auditDAO) {
 		this.auditDAO = auditDAO;
 	}
 
 	public void offer(User user) {
-		queue.add(user);
+		queue.offer(user);
 	}
 	
 	public void offerAll(List<User> users) {
-		queue.addAll(users);
+		for (User u : users) {
+			queue.offer(u);
+		}
 	}
 	
+//	@Override
+//	public void stopWorker() {
+//		super.stopWorker();
+//		try {
+//			if (!queue.isEmpty()) {
+//				List<User> temp = new ArrayList<User>();
+//				
+//				int num = queue.drainTo(temp);
+//				int records = auditDAO.logAceEvent(temp);
+//			}
+//		} catch (Exception ex) {
+//			ex.printStackTrace(System.err);
+//		}
+//	}
+
 	@Override
 	public void run() {
 		System.out.println("Starting " + getClass().getName());
@@ -44,9 +59,6 @@ public class PersistentWorker extends Worker {
 				System.out.println(records); 
 				
 //				auditDAO.listAceEvents();
-			} catch (InterruptedException e) {
-				e.printStackTrace(System.err);
-				stopWorker();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

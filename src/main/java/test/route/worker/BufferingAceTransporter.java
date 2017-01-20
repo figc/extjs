@@ -45,6 +45,8 @@ public class BufferingAceTransporter implements AceTransporter {
 				userList.clear();
 				System.out.println(userList.size());
 				System.out.println(temp.size());
+				
+				failedAceNotifier.publishEvents(temp);
 			}
 		}
 	}

@@ -24,6 +24,7 @@ public class LogEventWorker extends Worker {
 	@Override
 	public void stopWorker() {
 		System.out.println("About to stop worker for " + getClass().getName() + " size - " + queue.size());
+		aceTransporter.flushEvents();
 		super.stopWorker();
 	}
 
@@ -32,7 +33,7 @@ public class LogEventWorker extends Worker {
 	}
 	
 	public void offer(User user) {
-		queue.add(user);
+		queue.offer(user);
 	}
 
 	@Override
