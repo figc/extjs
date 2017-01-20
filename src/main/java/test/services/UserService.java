@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import test.aop.Auditable;
 import test.model.User;
-import test.route.AceEventNotifier;
+import test.route.worker.AceEventNotifier;
 
 /**
  * A sample user service to power the EXTJS application
@@ -48,12 +50,12 @@ public class UserService {
     
 //    @Autowired
 //    private ProducerTemplate producerTemplate;
+//  @Autowired
+//  private AceEventNotifier notifier;
+
 
     private AtomicInteger atomInt = new AtomicInteger(0);
     
-    @Autowired
-    private AceEventNotifier notifier;
-
 	/**
      * Authenticate a user
      *
@@ -108,11 +110,7 @@ public class UserService {
     	System.out.println(data);
     	
     	atomInt.incrementAndGet();
-    	
     	int i = atomInt.get();
-    	if (i % 2 == 1) {
-    		throw new RuntimeException("ERROR...testing out saving to db");
-    	}
     	
         Map<String, Object> results = new HashMap<String, Object>();
         results.put("success", true);
@@ -121,6 +119,8 @@ public class UserService {
     }
     
     @RequestMapping(value = "/user/sendMessage", method = RequestMethod.POST)
+    @Auditable
+    @ResponseBody
     public Map<String, Object> sendMessage() {
     	/*jmsTemplate.send(new MessageCreator() {
 			@Override
@@ -144,11 +144,9 @@ public class UserService {
     	user.setName("Mario");
     	user.setResults(list);
     	
-//    	producerTemplate.sendBody("seda:aceLogging", ExchangePattern.InOnly, user);
-    	notifier.publishEvent(user);
-
         Map<String, Object> results = new HashMap<String, Object>();
         results.put("success", true);
+        results.put("user", user);
 
         return results;
     }

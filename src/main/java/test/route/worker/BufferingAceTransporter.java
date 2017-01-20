@@ -1,4 +1,4 @@
-package test.route;
+package test.route.worker;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +15,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import test.model.User;
-import test.servlet.AuditDAO;
 import test.util.UserXmlWriter;
 
 public class BufferingAceTransporter implements AceTransporter {
@@ -28,38 +27,54 @@ public class BufferingAceTransporter implements AceTransporter {
 	
 	private CloseableHttpClient httpclient = null;
 	
-	private AuditDAO auditDAO;
+	private FailedAceNotifier failedAceNotifier;
 	
-	public BufferingAceTransporter(int maxSize, UserXmlWriter xmlWriter, AuditDAO auditDAO) {
+
+	public BufferingAceTransporter(int maxSize, UserXmlWriter xmlWriter, FailedAceNotifier failedAceNotifier) {
 		this.maxSize = maxSize;
 		this.xmlWriter = xmlWriter;
-		this.auditDAO = auditDAO;
+		this.failedAceNotifier = failedAceNotifier;
+	}
+
+	@Override
+	public void flushEvents() {
+		System.out.println("Flushing events to DB");
+		synchronized (userList) {
+			if (!userList.isEmpty()) {
+				List<User> temp = Collections.unmodifiableList(new ArrayList<User>(userList));
+				userList.clear();
+				System.out.println(userList.size());
+				System.out.println(temp.size());
+			}
+		}
 	}
 
 	@Override
 	public void transportEvent(User user) {
 		synchronized (userList) {
+			List<User> temp = null;
 			try {
-
 				userList.add(user);
-				
 				int size = userList.size();
+				
 				if (size > maxSize) {
+					temp = Collections.unmodifiableList(new ArrayList<User>(userList));
+					userList.clear();
 					
-					List<User> temp = Collections.unmodifiableList(new ArrayList<User>(userList));
 					String xml = xmlWriter.marshalUsers(temp);
 
 					int responseCode = post(xml);
+					System.out.println(responseCode);
+					
 					if (responseCode != HttpStatus.SC_OK) {
-						int records = auditDAO.logAceEvent(temp);
-						System.out.println("############Records persisted == size of "+ size + " // " + (records == size));
-						
-						auditDAO.listAceEvents();
+						failedAceNotifier.publishEvents(temp);
 					}
-					userList.clear();
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
+				if (temp != null) {
+					failedAceNotifier.publishEvents(temp);
+				}
 			}
 		}
 	}
@@ -68,8 +83,12 @@ public class BufferingAceTransporter implements AceTransporter {
 		if (httpclient == null) {
 			httpclient = HttpClients.custom().build();
 		}
+		
+		String url = "http://127.0.0.1/extjs/services/1/user/SSsendData.json";
 
-	    HttpPost post = new HttpPost("http://127.0.0.1/extjs/services/1/user/sendData.json");
+		System.out.println(url);
+		
+	    HttpPost post = new HttpPost(url);
 	    
 	    post.setHeader("Content-Type", "application/xml");
 	    post.setEntity(new ByteArrayEntity(xml.getBytes("UTF-8")));

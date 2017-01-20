@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import test.model.User;
+import test.route.worker.AceEventNotifier;
 
 @Component
 public class Hello {
