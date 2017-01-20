@@ -14,20 +14,34 @@
 	  <contextScan />
 	  <template id="producerTemplate" defaultEndpoint="seda:aceLogging"/>
   </camelContext-->
+
+  <task:executor id="executor" pool-size="10" />
   
-  <bean id="aceWorker" class="test.route.LogEventWorker" init-method="start">
+  <!-- bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+  	<property name="waitForTasksToCompleteOnShutdown" value="true" />
+  	<property name="awaitTerminationSeconds" value="15" />
+  	<property name="corePoolSize" value="2" />
+  	<property name="maxPoolSize" value="20" />
+  	<property name="queueCapacity" value="20" />
+  	<property name="threadNamePrefix" value="CustomThreadPoolExecutor-" />
+  </bean-->
+  
+  <bean id="aceWorker" class="test.route.worker.LogEventWorker" init-method="start">
   	<property name="executor" ref="executor" />
   	<property name="aceTransporter">
-	  <bean id="transporter" class="test.route.BufferingAceTransporter">
+	  <bean id="transporter" class="test.route.worker.BufferingAceTransporter">
 	    <constructor-arg value="5"/>
 	    <constructor-arg>
   	  	 	<bean class="test.util.UserXmlWriter" />
 	    </constructor-arg>
-	    <constructor-arg ref="auditDAO" />
+	    <constructor-arg ref="failedAceNotifier" />
 	  </bean>
   	</property>
   </bean>
   
-  <task:executor id="executor" pool-size="2" />
+  <bean id="persistentWorker" class="test.route.worker.PersistentWorker" init-method="start">
+  	<property name="executor" ref="executor" />
+    <constructor-arg ref="auditDAO" />
+  </bean>
   
 </beans>
