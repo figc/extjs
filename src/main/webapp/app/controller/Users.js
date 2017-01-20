@@ -60,16 +60,27 @@ Ext.define("MyApp.controller.Users", {
     
     //##################
     camelfy:function (button) {
-    	console.log('camelifyYYYYYYYY');
+    	
+    	var user = Ext.create('MyApp.model.User', {
+    	    'id': '22', 
+    	    'name': 'foob', 
+    	    'email': 'fo@gm.ca'
+    	});
+    	
+    	console.log(user);
     	
     	Ext.Ajax.request({
     	    url: 'services/1/user/sendMessage.json',
     	    method: 'POST',
-//    	    params: {
-//    	        id: 1
-//    	    },
+    	    jsonData: user.getData(),
+    	    params: {
+    	        id: 1,
+    	        'country.id': 33,
+    	        'subdivision.id': 44
+    	    },
     	    success: function(response){
     	        var text = response.responseText;
+    	        console.log('here is success text');
     	        console.log(text);
     	    },
     	    failure: function(response) {
