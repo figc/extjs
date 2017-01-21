@@ -11,15 +11,7 @@ public class LogEventWorker extends Worker {
 	
 	private AceTransporter aceTransporter;
 	
-	public LogEventWorker() {
-//		Runtime.getRuntime().addShutdownHook(new Thread(){
-//			@Override
-//			public void run() {
-//				aceTransporter.flushEvents();
-//				stopWorker();
-//			}
-//		});
-	}
+	public LogEventWorker() {	}
 	
 	@Override
 	public void stopWorker() {
@@ -42,7 +34,7 @@ public class LogEventWorker extends Worker {
 		while (running) {
 			try {
 				User user = queue.take();
-				System.out.printf("Got the user - id : {'%s'}, name : {'%s'}", user.getId(), user.getName());
+				System.out.printf("Got the user - id : {'%s'}, name : {'%s'}\n", user.getId(), user.getName() );
 				
 				aceTransporter.transportEvent(user);
 			} catch (InterruptedException e) {

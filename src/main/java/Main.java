@@ -1,32 +1,32 @@
 import java.io.IOException;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 
 public class Main { 
 
-	public static void main(String[] args) throws ClientProtocolException, IOException {
+	public static void main(String[] args) {
 		
-		CloseableHttpClient httpclient = HttpClients.custom().build();
-		HttpPost post = new HttpPost("http://127.0.0.1/extjs/services/1/user/sendMessage.json");
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(100);
+
+        CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(cm).build();
+        
+		MyThread[] threads = new MyThread[5];
 		
-        CloseableHttpResponse response = null;
-        while (true) {
-        	response = httpclient.execute(post);
-	        HttpEntity entity = response.getEntity();
-	        EntityUtils.consume(entity);
-        }
+		for (int i = 0; i < threads.length; i++) {
+			threads[i] = new MyThread("MyThread [" + i + "]", httpclient);
+			threads[i].start();
+		}
 	}
 	
 	/*
 	public static void main(String[] args) {
-	
-		
 		LogEventWorker worker = new LogEventWorker();
 		worker.setExecutor(Executors.newSingleThreadExecutor());
 		worker.start();
@@ -38,25 +38,41 @@ public class Main {
 		
 		t.start();
 		t2.start();
-	}
+	}*/
 	static class MyThread extends Thread {
 		
-		private AceEventNotifier eventNotifier;
-
-		public MyThread(String name, AceEventNotifier eventNotifier) {
+		private final CloseableHttpClient  httpClient;
+		
+		public MyThread(String name, CloseableHttpClient httpClient) {
 			setName(name);
-			this.eventNotifier = eventNotifier;
+			this.httpClient = httpClient;
 		}
 		
 		@Override
 		public void run() {
-			for (int i = 0; i < 1000; i++) {
-				User u = new User();
-				u.setId(UUID.randomUUID().toString());
-				u.setName(getName() + " : " + i);
+			
+			for (;;) {
+				HttpPost post = new HttpPost("http://127.0.0.1/extjs/services/1/user/sendMessage.json");
 				
-				eventNotifier.publishEvent(u);
+				System.out.println(getName() + " - sending request to " + post.getURI());
+		        CloseableHttpResponse response = null;
+	        	try {
+					response = httpClient.execute(post);
+			        HttpEntity entity = response.getEntity();
+			        EntityUtils.consume(entity);
+					
+			        Thread.sleep(1000);
+			        
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						if (response != null) {
+							response.close();
+						}
+					} catch (IOException e) { }
+				}
 			}
 		}		
-	}*/
+	}
 }

@@ -26,16 +26,17 @@
   	<property name="threadNamePrefix" value="CustomThreadPoolExecutor-" />
   </bean-->
   
+  
+  <bean id="transportManager" class="test.route.worker.TransportManager" />
+  
   <bean id="aceWorker" class="test.route.worker.LogEventWorker" init-method="start">
   	<property name="executor" ref="executor" />
   	<property name="aceTransporter">
 	  <bean id="transporter" class="test.route.worker.BufferingAceTransporter">
 	    <constructor-arg value="5"/>
-	    <constructor-arg>
-  	  	 	<bean class="test.util.UserXmlWriter" />
-	    </constructor-arg>
 	    <constructor-arg ref="failedAceNotifier" />
-	  </bean>
+	    <constructor-arg ref="transportManager" />
+  	  </bean>
   	</property>
   </bean>
   
